@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main-layout}">
+<head>
+    <title>Đặt Bàn - OrderSeatCF</title>
+</head>
+<body>
+    <div layout:fragment="content">
+
+        <!-- Page Header -->
+        <div class="text-center mb-5">
+            <h1 class="fw-bold mb-2" style="color: #1a120b;">
+                <i class="fa-solid fa-calendar-check me-2" style="color: #d4a373;"></i>Xác Nhận Đặt Bàn
+            </h1>
+            <p class="text-muted">Kiểm tra lại món đã chọn và điền thông tin đặt bàn bên dưới.</p>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- ===== CỘT TRÁI: TÓM TẮT GIỎ HÀNG ===== -->
+            <div class="col-lg-6">
+
+                <!-- Có món trong giỏ -->
+                <div th:if="${not #lists.isEmpty(cartItems)}"
+                     class="card border-0 shadow-lg h-100"
+                     style="border-radius: 20px; overflow: hidden;">
+                    <div class="card-header py-4"
+                         style="background: linear-gradient(135deg, #1a120b 0%, #3c2a21 100%);">
+                        <h5 class="fw-bold mb-0" style="color: #d4a373;">
+                            <i class="fa-solid fa-basket-shopping me-2"></i>Món Đã Chọn
+                            <span class="badge rounded-pill ms-2"
+                                  style="background-color: #d4a373; color: #1a120b; font-size: 0.85rem;"
+                                  th:text="${#lists.size(cartItems)}">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead style="background-color: #f8f5f0;">
+                                    <tr>
+                                        <th class="ps-4 py-3" style="color: #1a120b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Tên Món</th>
+                                        <th class="text-center py-3" style="color: #1a120b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">SL</th>
+                                        <th class="text-end pe-4 py-3" style="color: #1a120b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Thành Tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="item : ${cartItems}" style="border-bottom: 1px solid #f0e6d3;">
+                                        <td class="ps-4 py-3 fw-semibold" th:text="${item.name}" style="color: #1a120b;">Tên món</td>
+                                        <td class="text-center py-3">
+                                            <span class="badge rounded-pill fw-bold"
+                                                  style="background-color: #f0e6d3; color: #1a120b; font-size: 0.9rem; padding: 6px 12px;"
+                                                  th:text="'x' + ${item.quantity}">x1</span>
+                                        </td>
+                                        <td class="text-end pe-4 py-3 fw-bold"
+                                            style="color: #d4a373;"
+                                            th:text="${#numbers.formatDecimal(item.price * item.quantity, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0 px-4 py-3"
+                         style="border-top: 2px solid #f0e6d3 !important;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">Tổng tiền món:</span>
+                            <span class="fs-5 fw-bold"
+                                  style="color: #d4a373;"
+                                  th:text="${#numbers.formatDecimal(cartTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</span>
+                        </div>
+                        <a th:href="@{/cart}"
+                           class="btn btn-sm w-100 rounded-pill"
+                           style="border: 2px solid #d4a373; color: #d4a373; background: transparent; font-weight: 600; transition: 0.3s;"
+                           onmouseover="this.style.background='#d4a373'; this.style.color='white';"
+                           onmouseout="this.style.background='transparent'; this.style.color='#d4a373';">
+                            <i class="fa-solid fa-pen-to-square me-2"></i>Sửa Giỏ Hàng
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Giỏ hàng trống -->
+                <div th:if="${#lists.isEmpty(cartItems)}"
+                     class="card border-0 shadow-sm h-100 text-center p-5"
+                     style="border-radius: 20px; background: linear-gradient(135deg, #fdf8f3, #f5ede0);">
+                    <div class="my-auto">
+                        <div class="mb-4" style="font-size: 4.5rem; color: #d4a373; opacity: 0.6;">
+                            <i class="fa-solid fa-basket-shopping"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2" style="color: #1a120b;">Chưa chọn món nào</h5>
+                        <p class="text-muted mb-4 small">
+                            Bạn vẫn có thể đặt bàn trước và chọn món khi đến quán.<br>
+                            Hoặc quay lại thực đơn để thêm món ngay.
+                        </p>
+                        <a th:href="@{/menu}"
+                           class="btn rounded-pill px-5 py-2 fw-bold"
+                           style="background: linear-gradient(135deg, #d4a373, #bc8a5f); color: white; border: none; transition: 0.3s;">
+                            <i class="fa-solid fa-utensils me-2"></i>Xem Thực Đơn
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== CỘT PHẢI: FORM ĐẶT BÀN ===== -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-lg h-100" style="border-radius: 20px; overflow: hidden;">
+                    <div class="card-header py-4 text-center"
+                         style="background: linear-gradient(135deg, #1a120b 0%, #3c2a21 100%);">
+                        <h4 class="fw-bold mb-1" style="color: #d4a373;">
+                            <i class="fa-solid fa-chair me-2"></i>Thông Tin Đặt Bàn
+                        </h4>
+                        <p class="mb-0 small" style="color: rgba(255,255,255,0.6);">
+                            Vui lòng điền để chúng tôi chuẩn bị tốt nhất
+                        </p>
+                    </div>
+                    <div class="card-body p-4 p-md-5">
+
+                        <div th:if="${error}" class="alert alert-danger rounded-3" th:text="${error}"></div>
+
+                        <form th:action="@{/customer/booking}" method="post" th:object="${reservation}">
+
+                            <!-- Chọn Bàn -->
+                            <div class="mb-4">
+                                <label for="coffeeTable" class="form-label fw-semibold" style="color: #1a120b;">
+                                    <i class="fa-solid fa-chair me-2" style="color: #d4a373;"></i>Chọn Bàn / Khu Vực
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select form-select-lg"
+                                        id="coffeeTable"
+                                        th:field="*{coffeeTable}"
+                                        required
+                                        style="border-radius: 12px; border: 2px solid #e8d5b7; background-color: #fdf8f3;"
+                                        th:classappend="${#fields.hasErrors('coffeeTable')} ? 'is-invalid' : ''">
+                                    <option value="" disabled selected>-- Vui lòng chọn bàn --</option>
+                                    <option th:each="table : ${tables}"
+                                            th:value="${table.id}"
+                                            th:text="${table.name} + ' (Sức chứa: ' + ${table.capacity} + ' người)'"></option>
+                                </select>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('coffeeTable')}" th:errors="*{coffeeTable}">
+                                    Vui lòng chọn bàn.
+                                </div>
+                            </div>
+
+                            <!-- Thời Gian -->
+                            <div class="mb-4">
+                                <label for="reservationTime" class="form-label fw-semibold" style="color: #1a120b;">
+                                    <i class="fa-regular fa-clock me-2" style="color: #d4a373;"></i>Thời Gian Định Đến
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="datetime-local"
+                                       class="form-control form-control-lg"
+                                       id="reservationTime"
+                                       th:field="*{reservationTime}"
+                                       required
+                                       style="border-radius: 12px; border: 2px solid #e8d5b7; background-color: #fdf8f3;"
+                                       th:classappend="${#fields.hasErrors('reservationTime')} ? 'is-invalid' : ''">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('reservationTime')}" th:errors="*{reservationTime}">
+                                    Thời gian không hợp lệ.
+                                </div>
+                            </div>
+
+                            <!-- Ghi Chú -->
+                            <div class="mb-4">
+                                <label for="note" class="form-label fw-semibold" style="color: #1a120b;">
+                                    <i class="fa-regular fa-clipboard me-2" style="color: #d4a373;"></i>Ghi Chú Thêm
+                                </label>
+                                <textarea class="form-control"
+                                          id="note"
+                                          th:field="*{note}"
+                                          rows="3"
+                                          placeholder="Yêu cầu đặc biệt (ghế trẻ em, trang trí sinh nhật...)"
+                                          style="border-radius: 12px; border: 2px solid #e8d5b7; background-color: #fdf8f3;"></textarea>
+                            </div>
+
+                            <!-- Nút Xác Nhận -->
+                            <div class="d-grid mt-4">
+                                <button type="submit"
+                                        id="btn-confirm-booking"
+                                        class="btn btn-lg fw-bold py-3"
+                                        style="background: linear-gradient(135deg, #d4a373, #bc8a5f); color: white; border: none; border-radius: 50px; transition: 0.3s; letter-spacing: 0.5px;">
+                                    <i class="fa-solid fa-check-circle me-2"></i>Xác Nhận Đặt Bàn
+                                </button>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <a th:href="@{/customer/history}" class="text-decoration-none small text-muted">
+                                    <i class="fa-solid fa-clock-rotate-left me-1"></i>Xem lịch sử đặt bàn của tôi
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            #btn-confirm-booking:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 12px 30px rgba(212, 163, 115, 0.5);
+            }
+            .card {
+                transition: box-shadow 0.3s;
+            }
+        </style>
+    </div>
+</body>
+</html>

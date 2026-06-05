@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title>Danh Mục Form</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+            <h1 class="h2" th:text="${category.id == null ? 'Thêm Danh Mục Mới' : 'Cập Nhật Danh Mục'}">Form</h1>
+            <a th:href="@{/admin/categories}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <form th:action="@{/admin/categories/save}" method="post" th:object="${category}">
+                            <input type="hidden" th:field="*{id}">
+                            
+                            <div class="mb-3">
+                                <label for="name" class="form-label fw-bold">Tên Danh Mục <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" th:field="*{name}" placeholder="Ví dụ: Cà phê, Trà sữa..." required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="parentId" class="form-label fw-bold">Danh mục cha</label>
+                                <select class="form-select" id="parentId" name="parentId">
+                                    <option value="">-- Là danh mục gốc (Không có cha) --</option>
+                                    <option th:each="p : ${parentCategories}" 
+                                            th:value="${p.id}" 
+                                            th:text="${p.name}"
+                                            th:selected="${category.parent != null && category.parent.id == p.id}">
+                                    </option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label fw-bold">Mô tả danh mục</label>
+                                <textarea class="form-control" id="description" th:field="*{description}" rows="3" placeholder="Mô tả ngắn gọn về danh mục này..."></textarea>
+                            </div>
+                            
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fa-solid fa-save"></i> Lưu Danh Mục
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title>Quản lý Đơn Đặt Bàn</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+            <h1 class="h2">Quản Lý Đơn Đặt Bàn</h1>
+        </div>
+
+        <div th:if="${param.success}" class="alert alert-success">Đã cập nhật trạng thái đơn đặt bàn thành công!</div>
+
+        <div class="table-responsive bg-white rounded shadow-sm">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Mã Đơn</th>
+                        <th scope="col">Khách Hàng</th>
+                        <th scope="col">Số Điện Thoại</th>
+                        <th scope="col">Bàn/Khu Vực</th>
+                        <th scope="col">Thời gian</th>
+                        <th scope="col">Ghi chú</th>
+                        <th scope="col" class="text-center">Trạng Thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="r : ${reservations}">
+                        <td class="fw-bold" th:text="'#' + ${r.id}"></td>
+                        <td th:text="${r.user.fullName != null ? r.user.fullName : r.user.username}"></td>
+                        <td th:text="${r.user.phone}"></td>
+                        <td th:text="${r.coffeeTable.name}"></td>
+                        <td th:text="${#temporals.format(r.reservationTime, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td>
+                            <span class="text-truncate d-inline-block" style="max-width: 150px;" th:text="${r.note ?: 'Không có'}" th:title="${r.note}"></span>
+                        </td>
+                        <td class="text-center">
+                            <!-- Form update nhanh trạng thái -->
+                            <form th:action="@{/admin/reservations/update-status/{id}(id=${r.id})}" method="post" class="d-inline-flex align-items-center">
+                                <select name="status" class="form-select form-select-sm fw-bold me-2" onchange="this.form.submit()"
+                                        th:classappend="${r.status.name() == 'PENDING' ? 'text-warning' : (r.status.name() == 'CONFIRMED' ? 'text-success' : 'text-danger')}">
+                                    <option th:each="st : ${statuses}" 
+                                            th:value="${st}" 
+                                            th:text="${st.name() == 'PENDING' ? 'Chờ Duyệt' : (st.name() == 'CONFIRMED' ? 'Đã Xác Nhận' : 'Đã Hủy')}"
+                                            th:selected="${st == r.status}"></option>
+                                </select>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(reservations)}">
+                        <td colspan="7" class="text-center text-muted py-4">Chưa có đơn đặt bàn nào trong hệ thống.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

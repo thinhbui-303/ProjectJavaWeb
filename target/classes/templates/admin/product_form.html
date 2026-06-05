@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title>Sản Phẩm Form</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+            <h1 class="h2" th:text="${product.id == null ? 'Thêm Sản Phẩm Mới' : 'Cập Nhật Sản Phẩm'}">Form</h1>
+            <a th:href="@{/admin/products}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <form th:action="@{/admin/products/save}" method="post" th:object="${product}" enctype="multipart/form-data">
+                            <!-- Nếu là sửa sẽ có ID -->
+                            <input type="hidden" th:field="*{id}">
+                            
+                            <div class="mb-3">
+                                <label for="name" class="form-label fw-bold">Tên Sản Phẩm <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" th:field="*{name}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="category" class="form-label fw-bold">Danh mục <span class="text-danger">*</span></label>
+                                <select class="form-select" id="category" th:field="*{categoryId}" required>
+                                    <option value="" disabled selected>-- Chọn danh mục --</option>
+                                    <option th:each="cat : ${categories}" th:value="${cat.id}" 
+                                            th:text="${cat.parent != null ? cat.parent.name + ' > ' + cat.name : cat.name}"></option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label fw-bold">Mô tả</label>
+                                <textarea class="form-control" id="description" th:field="*{description}" rows="3"></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="price" class="form-label fw-bold">Giá bán (VND) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="price" th:field="*{price}" min="0" required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="imageFile" class="form-label fw-bold">Hình ảnh sản phẩm</label>
+                                <input type="file" class="form-control" id="imageFile" th:field="*{imageFile}" accept="image/*">
+                            </div>
+                            
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Lưu Sản Phẩm
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

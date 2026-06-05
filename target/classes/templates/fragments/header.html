@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+    <!-- Navbar Fragment -->
+    <nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color: #1a120b;">
+        <style>
+            @media (min-width: 992px) {
+                .dropdown-submenu { position: relative; }
+                .dropdown-submenu .dropdown-menu {
+                    top: 0;
+                    left: 100%;
+                    margin-top: -5px; /* Căn chỉnh lại vị trí */
+                    display: none;
+                }
+                .dropdown-submenu:hover > .dropdown-menu {
+                    display: block !important;
+                }
+                /* Thay đổi màu khi hover vào danh mục có menu con */
+                .dropdown-submenu:hover > .dropdown-item {
+                    background-color: #495057;
+                    color: white !important;
+                }
+            }
+            @media (max-width: 991.98px) {
+                .dropdown-submenu .dropdown-menu {
+                    position: static;
+                    float: none;
+                    display: block;
+                    border: 0;
+                    box-shadow: none;
+                    padding-left: 1.25rem;
+                    background-color: transparent;
+                }
+                .dropdown-submenu > .dropdown-item {
+                    font-weight: bold;
+                    color: #fff !important;
+                }
+                .dropdown-submenu .dropdown-submenu > .dropdown-item {
+                    font-weight: 500;
+                    color: #ccc !important;
+                }
+                .dropdown-submenu .dropdown-submenu .dropdown-menu .dropdown-item {
+                    font-weight: normal;
+                    font-size: 0.85rem;
+                    color: #aaa !important;
+                    padding-left: 1.5rem;
+                }
+            }
+        </style>
+        <div class="container">
+            <a class="navbar-brand fw-bold" th:href="@{/}">
+                <i class="fa-solid fa-mug-hot text-warning"></i> OrderSeat<span class="text-warning">CF</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="menuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Thực Đơn
+                        </a>
+                        <ul class="dropdown-menu shadow border-0" aria-labelledby="menuDropdown">
+                            <li><a class="dropdown-item fw-bold" th:href="@{/menu}">Tất cả sản phẩm</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            
+                            <!-- Level 2: Top-level categories -->
+                            <li th:each="cat : ${topLevelCategories}" class="dropdown-submenu dropend">
+                                <a class="dropdown-item d-flex justify-content-between align-items-center" 
+                                   th:href="@{/menu(catId=${cat.id})}">
+                                   <span th:text="${cat.name}">Danh mục cha</span>
+                                   <i th:if="${!#lists.isEmpty(cat.subCategories) || !#lists.isEmpty(cat.products)}" class="fa-solid fa-chevron-right small ms-2"></i>
+                                </a>
+                                
+                                <!-- Case A: Has Sub-categories (Level 3) -->
+                                <ul th:if="${!#lists.isEmpty(cat.subCategories)}" class="dropdown-menu shadow border-0">
+                                    <li th:each="subCat : ${cat.subCategories}" class="dropdown-submenu dropend">
+                                        <a class="dropdown-item d-flex justify-content-between align-items-center" 
+                                           th:href="@{/menu(catId=${subCat.id})}">
+                                           <span th:text="${subCat.name}">Danh mục con</span>
+                                           <i th:if="${!#lists.isEmpty(subCat.products)}" class="fa-solid fa-chevron-right small ms-2"></i>
+                                        </a>
+                                        <!-- Level 4: Products under each Sub-category -->
+                                        <ul th:if="${!#lists.isEmpty(subCat.products)}" class="dropdown-menu shadow border-0">
+                                            <li th:each="prod : ${subCat.products}">
+                                                <a class="dropdown-item small" th:href="@{/menu(catId=${subCat.id})}" th:text="${prod.name}">Sản phẩm</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                                
+                                <!-- Case B: No Sub-categories, but has Products directly -->
+                                <ul th:if="${#lists.isEmpty(cat.subCategories) && !#lists.isEmpty(cat.products)}" class="dropdown-menu shadow border-0">
+                                    <li th:each="prod : ${cat.products}">
+                                        <a class="dropdown-item small" th:href="@{/menu(catId=${cat.id})}" th:text="${prod.name}">Sản phẩm</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/customer/booking}">Đặt Bàn</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/cart}">
+                            <i class="fa-solid fa-cart-shopping"></i> Giỏ Hàng
+                        </a>
+                    </li>
+                    
+                    <!-- Admin Menu: Hiển thị nếu user có role ADMIN -->
+                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                        <a class="nav-link text-warning" th:href="@{/admin/dashboard}">
+                            <i class="fa-solid fa-gauge"></i> Admin Dashboard
+                        </a>
+                    </li>
+                </ul>
+
+                <ul class="navbar-nav">
+                    <!-- User is Anonymous -->
+                    <li class="nav-item" sec:authorize="isAnonymous()">
+                        <a class="nav-link" th:href="@{/login}">Đăng Nhập</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAnonymous()">
+                        <a class="btn btn-outline-light ms-2" th:href="@{/register}">Đăng Ký</a>
+                    </li>
+                    
+                    <!-- User is Authenticated -->
+                    <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-user"></i> Xin chào, <span sec:authentication="name">User</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" th:href="@{/customer/profile}">Hồ sơ cá nhân</a></li>
+                            <li><a class="dropdown-item" th:href="@{/customer/history}">Lịch sử đặt bàn</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="d-inline">
+                                    <button type="submit" class="dropdown-item text-danger">Đăng xuất</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</body>
+</html>

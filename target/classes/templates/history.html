@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main-layout}">
+<head>
+    <title>Lịch Sử Đặt Bàn - OrderSeatCF</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h2 class="fw-bold text-primary mb-4">Lịch Sử Đặt Bàn Của Tôi</h2>
+
+        <div th:if="${param.cancelSuccess}" class="alert alert-success">Đã hủy đơn đặt bàn thành công!</div>
+        <div th:if="${param.cancelError}" class="alert alert-danger" th:text="${param.cancelError}">Lỗi khi hủy đơn.</div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col" class="ps-4">Mã Đơn</th>
+                                <th scope="col">Bàn/Khu Vực</th>
+                                <th scope="col">Thời gian</th>
+                                <th scope="col">Ghi chú</th>
+                                <th scope="col" class="text-center">Trạng Thái</th>
+                                <th scope="col" class="text-center pe-4">Hành Động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="r : ${reservations}">
+                                <td class="ps-4 fw-bold text-muted" th:text="'#' + ${r.id}"></td>
+                                <td th:text="${r.coffeeTable.name}"></td>
+                                <td th:text="${#temporals.format(r.reservationTime, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td>
+                                    <span class="text-truncate d-inline-block" style="max-width: 150px;" th:text="${r.note ?: 'Không có'}" th:title="${r.note}"></span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge rounded-pill bg-warning text-dark px-3 py-2" th:if="${r.status.name() == 'PENDING'}">Chờ Duyệt</span>
+                                    <span class="badge rounded-pill bg-success px-3 py-2" th:if="${r.status.name() == 'CONFIRMED'}">Đã Xác Nhận</span>
+                                    <span class="badge rounded-pill bg-danger px-3 py-2" th:if="${r.status.name() == 'CANCELLED'}">Đã Hủy</span>
+                                </td>
+                                <td class="text-center pe-4">
+                                    <a th:if="${r.status.name() == 'PENDING'}" 
+                                       th:href="@{/customer/booking/cancel/{id}(id=${r.id})}" 
+                                       class="btn btn-sm btn-outline-danger" 
+                                       onclick="return confirm('Bạn có chắc chắn muốn hủy đơn đặt bàn này?');">
+                                        <i class="fa-solid fa-xmark"></i> Hủy đơn
+                                    </a>
+                                    <span th:if="${r.status.name() != 'PENDING'}" class="text-muted small">Không thể hủy</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(reservations)}">
+                                <td colspan="6" class="text-center text-muted py-5">
+                                    <i class="fa-solid fa-calendar-xmark fs-2 mb-3 d-block text-secondary"></i>
+                                    Bạn chưa có lịch sử đặt bàn nào. <a th:href="@{/customer/booking}" class="text-primary text-decoration-none">Đặt bàn ngay!</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

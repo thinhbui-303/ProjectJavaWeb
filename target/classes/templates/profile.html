@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main-layout}">
+<head>
+    <title>Hồ Sơ Cá Nhân - OrderSeatCF</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white text-center py-4 border-bottom">
+                        <i class="fa-solid fa-user-circle fs-1 text-primary mb-2"></i>
+                        <h3 class="fw-bold mb-0">Hồ Sơ Cá Nhân</h3>
+                    </div>
+                    <div class="card-body p-4 p-md-5">
+
+                        <div th:if="${param.success}" class="alert alert-success">
+                            Cập nhật thông tin thành công!
+                        </div>
+
+                        <form th:action="@{/customer/profile/update}" method="post" th:object="${user}">
+                            
+                            <div class="mb-3">
+                                <label for="username" class="form-label fw-bold text-muted">Tên Đăng Nhập</label>
+                                <input type="text" class="form-control" id="username" th:field="*{username}" readonly disabled>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label fw-bold text-muted">Thư Điện Tử (Email)</label>
+                                <input type="email" class="form-control" id="email" th:field="*{email}" readonly disabled>
+                            </div>
+
+                            <div class="mb-3 mt-4">
+                                <label for="fullName" class="form-label fw-bold">Họ và Tên</label>
+                                <input type="text" class="form-control" id="fullName" th:field="*{fullName}" placeholder="Nhập họ tên của bạn">
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="phone" class="form-label fw-bold">Số Điện Thoại</label>
+                                <input type="tel" class="form-control" id="phone" th:field="*{phone}" placeholder="Ví dụ: 0901234567">
+                            </div>
+
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                                    <i class="fa-solid fa-floppy-disk me-1"></i> Lưu Cập Nhật
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

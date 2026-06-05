@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main-layout}">
+<head>
+    <title>Đăng Nhập</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card shadow-sm mt-5 border-0">
+                    <div class="card-body p-5">
+                        <h3 class="text-center mb-4 fw-bold">Đăng Nhập OrderSeatCF</h3>
+
+                        <div th:if="${param.error}" class="alert alert-danger" role="alert">
+                            Tên đăng nhập hoặc mật khẩu không chính xác.
+                        </div>
+                        <div th:if="${param.logout}" class="alert alert-success" role="alert">
+                            Bạn đã đăng xuất thành công.
+                        </div>
+                        <div th:if="${param.registered}" class="alert alert-success" role="alert">
+                            Đăng ký thành công! Vui lòng đăng nhập.
+                        </div>
+
+                        <form th:action="@{/login-process}" method="post">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Tên đăng nhập</label>
+                                <input type="text" class="form-control" id="username" name="username" required autofocus>
+                            </div>
+                            <div class="mb-4">
+                                <label for="password" class="form-label">Mật khẩu</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary btn-lg">Đăng Nhập</button>
+                            </div>
+                            <div class="text-center">
+                                <span class="text-muted">Chưa có tài khoản? </span>
+                                <a th:href="@{/register}" class="text-decoration-none">Đăng ký ngay</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

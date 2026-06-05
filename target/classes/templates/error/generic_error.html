@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main-layout}">
+<head>
+    <title>Lỗi Hệ Thống</title>
+</head>
+<body>
+    <div layout:fragment="content" class="text-center py-5">
+        <div class="mb-4">
+            <i class="fa-solid fa-circle-exclamation text-danger" style="font-size: 5rem;"></i>
+        </div>
+        <h1 class="fw-bold">Rất tiếc, đã có lỗi xảy ra</h1>
+        <p class="lead text-muted mb-4" th:text="${errorMessage}">Chi tiết lỗi sẽ hiển thị ở đây.</p>
+        <a th:href="@{/}" class="btn btn-premium px-5">Quay về trang chủ</a>
+    </div>
+</body>
+</html>

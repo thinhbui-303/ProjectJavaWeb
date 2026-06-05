@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main-layout}">
+<head>
+    <title>Thực Đơn - OrderSeatCF</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="row align-items-center mb-5">
+            <div class="col-md-8 text-md-start text-center">
+                <h1 class="display-5 fw-bold text-dark mb-0">Thực Đơn <span style="color: #d4a373;">OrderSeat</span></h1>
+                <p class="text-muted mb-0">Khám phá bộ sưu tập đồ uống thượng hạng từ OrderSeat Coffee.</p>
+            </div>
+            <div class="col-md-4 text-md-end text-center mt-3 mt-md-0">
+                <a th:href="@{/cart}" class="btn btn-premium position-relative px-4">
+                    <i class="fa-solid fa-cart-shopping me-2"></i> Xem Giỏ Hàng
+                    <span id="cart-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span>
+                </a>
+            </div>
+        </div>
+
+        <style>
+            @keyframes fadeInSlide {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            .subcat-filter {
+                animation: fadeInSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                background: rgba(26, 18, 11, 0.04);
+                padding: 12px;
+                border-radius: 50px;
+                border: 1px solid rgba(26, 18, 11, 0.08);
+            }
+        </style>
+
+        <!-- Category Filter (Server-side) -->
+        <div class="d-flex justify-content-center flex-wrap gap-2"
+             th:classappend="${parentCategory != null && !#lists.isEmpty(parentCategory.subCategories)} ? 'mb-3' : 'mb-5'">
+            <a th:href="@{/menu}" 
+               class="btn px-4 rounded-pill fw-bold" 
+               th:classappend="${selectedCategory == null} ? 'btn-premium active' : 'btn-outline-secondary'">
+               Tất cả
+            </a>
+            <a th:each="cat : ${topLevelCategories}" 
+               th:href="@{/menu(catId=${cat.id})}" 
+               class="btn px-4 rounded-pill fw-bold" 
+               th:classappend="${parentCategory != null && parentCategory.id == cat.id} ? 'btn-premium active' : 'btn-outline-secondary'"
+               th:text="${cat.name}">
+            </a>
+        </div>
+
+        <!-- Sub-category Filter (Secondary Tier) -->
+        <div th:if="${parentCategory != null && !#lists.isEmpty(parentCategory.subCategories)}" 
+             class="d-flex justify-content-center flex-wrap gap-2 mb-5 subcat-filter">
+            <a th:href="@{/menu(catId=${parentCategory.id})}" 
+               class="btn btn-sm px-3 rounded-pill fw-bold"
+               th:classappend="${selectedCategory.id == parentCategory.id} ? 'btn-dark text-white' : 'btn-light text-dark'">
+               Tất cả [[${parentCategory.name}]]
+            </a>
+            <a th:each="subCat : ${parentCategory.subCategories}" 
+               th:href="@{/menu(catId=${subCat.id})}" 
+               class="btn btn-sm px-3 rounded-pill fw-bold" 
+               th:classappend="${selectedCategory.id == subCat.id} ? 'btn-dark text-white' : 'btn-light text-dark'"
+               th:text="${subCat.name}">
+            </a>
+        </div>
+
+        <div class="row g-4" id="product-grid">
+            <div class="col-12 col-sm-6 col-lg-3 product-item" 
+                 th:each="product : ${products}">
+                <div class="card h-100 border-0 shadow-lg product-card overflow-hidden" style="border-radius: 20px; transition: 0.3s;">
+                    <div class="position-relative">
+                        <img th:src="${product.imageUrl ?: 'https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&q=80&w=400&h=300'}" 
+                             class="card-img-top" alt="Product" style="height: 250px; object-fit: cover;">
+                        <div class="position-absolute top-0 end-0 m-3">
+                            <span class="badge bg-white text-dark shadow-sm px-3 py-2 rounded-pill fw-bold" 
+                                  th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                0 đ
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <h5 class="card-title fw-bold mb-2" th:text="${product.name}">Tên đồ uống</h5>
+                        <p class="card-text text-muted small mb-4" style="height: 40px; overflow: hidden;"
+                           th:text="${product.description ?: 'Hương vị đặc trưng chỉ có tại OrderSeat Coffee.'}"></p>
+                        
+                        <button class="btn btn-premium w-100 rounded-pill btn-add-cart" 
+                                th:data-id="${product.id}" 
+                                th:data-name="${product.name}"
+                                onclick="addToCart(this.getAttribute('data-id'), this.getAttribute('data-name'))">
+                            <i class="fa-solid fa-plus me-2"></i>Thêm vào giỏ
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div th:if="${#lists.isEmpty(products)}" class="col-12 text-center text-muted py-5">
+                <div class="bg-light d-inline-block p-5 rounded-circle mb-4">
+                    <i class="fa-solid fa-mug-hot fs-1 text-secondary"></i>
+                </div>
+                <h3>Chưa có sản phẩm nào</h3>
+                <p>Chúng tôi đang cập nhật menu, vui lòng quay lại sau.</p>
+            </div>
+        </div>
+
+        <!-- Toast Notification cho Add to Cart -->
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+            <div id="cartToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        Đã thêm <strong id="toastProductName"></strong> vào giỏ hàng!
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inline JS Handle Fetch API Add to Cart -->
+        <script>
+            function addToCart(productId, productName) {
+                // Sử dụng Fetch API để gửi yêu cầu POST thêm món mà không load lại trang
+                const formData = new URLSearchParams();
+                formData.append('productId', productId);
+                formData.append('quantity', 1);
+
+                fetch('/cart/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        [document.querySelector('meta[name="_csrf_header"]').content]: document.querySelector('meta[name="_csrf"]').content
+                    },
+                    body: formData.toString()
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Hiện Toast báo thành công
+                        document.getElementById('toastProductName').textContent = productName;
+                        const toastEl = document.getElementById('cartToast');
+                        const toast = new bootstrap.Toast(toastEl);
+                        toast.show();
+                        
+                        // Cập nhật badge giỏ hàng (giả lập tăng animation nhỏ)
+                        const badge = document.getElementById('cart-badge');
+                        badge.classList.remove('d-none');
+                        let currentCount = parseInt(badge.textContent) || 0;
+                        badge.textContent = currentCount + 1;
+                    } else if(response.status === 401 || response.status === 403) {
+                         alert("Vui lòng đăng nhập trước khi thêm vào giỏ hàng!");
+                         window.location.href = '/login';
+                    } else {
+                        alert("Có lỗi xảy ra khi thêm vào giỏ hàng!");
+                    }
+                })
+                .catch(error => console.error('Error adding to cart:', error));
+            }
+        </script>
+        
+        <style>
+            .transition-hover {
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .transition-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+            }
+        </style>
+    </div>
+</body>
+</html>
