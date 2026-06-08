@@ -38,9 +38,10 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/", "/menu", "/login", "/register", "/cart", "/cart/add", "/cart/update", "/cart/remove", "/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/", "/menu", "/login", "/register", "/css/**", "/js/**", "/images/**", "/error").permitAll()
+                .requestMatchers("/cart", "/cart/**").hasRole("CUSTOMER")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/customer/**", "/reservation/**", "/cart/checkout").hasRole("CUSTOMER")
+                .requestMatchers("/customer/**").hasRole("CUSTOMER")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -57,6 +58,18 @@ public class SecurityConfig {
                 .deleteCookies("JSESSIONID")
                 .permitAll()
             )
+            .exceptionHandling(ex -> ex
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    // Admin cố tình truy cập trang khách hàng => redirect về dashboard
+                    boolean isAdmin = request.isUserInRole("ADMIN");
+                    if (isAdmin) {
+                        response.sendRedirect("/admin/dashboard?forbidden=true");
+                    } else {
+                        response.sendRedirect("/login?forbidden=true");
+                    }
+                })
+            )
+            .csrf(csrf -> csrf.disable())
             .authenticationProvider(authenticationProvider());
 
         return http.build();

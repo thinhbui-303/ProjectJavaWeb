@@ -45,7 +45,11 @@ public class CartController {
     @ResponseBody
     public ResponseEntity<?> addToCart(@RequestParam("productId") Long productId,
                                        @RequestParam(value = "quantity", defaultValue = "1") Integer quantity,
-                                       HttpSession session) {
+                                       HttpSession session, org.springframework.security.core.Authentication auth) {
+        
+        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            return ResponseEntity.status(403).body("Quản trị viên không thể thêm vào giỏ hàng");
+        }
         Product product = productService.getProductById(productId);
         if (product == null) {
             return ResponseEntity.badRequest().body("Sản phẩm không tồn tại");

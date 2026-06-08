@@ -40,7 +40,35 @@ public class ProductServiceImpl implements ProductService {
         }
         return productRepository.findByCategoryIdIn(categoryIds);
     }
+    @Override
+    public org.springframework.data.domain.Page<com.orderseat.entity.Product> getProductsPaged(String keyword, int page, int size) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return productRepository.findByNameContainingIgnoreCase(keyword.trim(), pageable);
+        }
+        return productRepository.findAll(pageable);
+    }
 
+    @Override
+    public org.springframework.data.domain.Page<com.orderseat.entity.Product> getProductsByCategoryPaged(Long categoryId, String keyword, int page, int size) {
+        com.orderseat.entity.Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Danh mục không tồn tại"));
+        
+        java.util.List<Long> categoryIds = new java.util.ArrayList<>();
+        categoryIds.add(category.getId());
+        if (category.getSubCategories() != null) {
+            for (com.orderseat.entity.Category sub : category.getSubCategories()) {
+                categoryIds.add(sub.getId());
+            }
+        }
+        
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return productRepository.findByCategoryIdInAndNameContainingIgnoreCase(categoryIds, keyword.trim(), pageable);
+        }
+        
+        return productRepository.findByCategoryIdIn(categoryIds, pageable);
+    }
     @Override
     @org.springframework.transaction.annotation.Transactional
     public void saveProduct(com.orderseat.dto.ProductRequest request) {
@@ -71,7 +99,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
+        Product product = productRepository.findById(id).orElse(null);
+        if (product != null) {
+            if (product.getCategory() != null) {
+                product.getCategory().getProducts().remove(product);
+            }
+            productRepository.delete(product);
+        }
     }
 }

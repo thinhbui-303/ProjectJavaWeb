@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{layout/main-layout}">
 <head>
     <title>Thực Đơn - OrderSeatCF</title>
@@ -12,7 +13,7 @@
                 <h1 class="display-5 fw-bold text-dark mb-0">Thực Đơn <span style="color: #d4a373;">OrderSeat</span></h1>
                 <p class="text-muted mb-0">Khám phá bộ sưu tập đồ uống thượng hạng từ OrderSeat Coffee.</p>
             </div>
-            <div class="col-md-4 text-md-end text-center mt-3 mt-md-0">
+            <div class="col-md-4 text-md-end text-center mt-3 mt-md-0" sec:authorize="!hasRole('ADMIN')">
                 <a th:href="@{/cart}" class="btn btn-premium position-relative px-4">
                     <i class="fa-solid fa-cart-shopping me-2"></i> Xem Giỏ Hàng
                     <span id="cart-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span>
@@ -40,16 +41,29 @@
             }
         </style>
 
+        <!-- Search Bar -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-6">
+                <form th:action="@{/menu}" method="get" class="d-flex shadow-sm rounded-pill overflow-hidden" style="border: 1px solid #e8d5b7;">
+                    <input type="hidden" name="catId" th:if="${selectedCatId != null}" th:value="${selectedCatId}">
+                    <input type="text" name="keyword" class="form-control border-0 px-4 py-2" placeholder="Tìm kiếm đồ uống, bánh ngọt..." th:value="${keyword}" style="box-shadow: none;">
+                    <button type="submit" class="btn btn-premium px-4" style="border-radius: 0;">
+                        <i class="fa-solid fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
         <!-- Category Filter (Server-side) -->
         <div class="d-flex justify-content-center flex-wrap gap-2"
              th:classappend="${parentCategory != null && !#lists.isEmpty(parentCategory.subCategories)} ? 'mb-3' : 'mb-5'">
-            <a th:href="@{/menu}" 
+            <a th:href="@{/menu(keyword=${keyword})}" 
                class="btn px-4 rounded-pill fw-bold" 
                th:classappend="${selectedCategory == null} ? 'btn-premium active' : 'btn-outline-secondary'">
                Tất cả
             </a>
             <a th:each="cat : ${topLevelCategories}" 
-               th:href="@{/menu(catId=${cat.id})}" 
+               th:href="@{/menu(catId=${cat.id}, keyword=${keyword})}" 
                class="btn px-4 rounded-pill fw-bold" 
                th:classappend="${parentCategory != null && parentCategory.id == cat.id} ? 'btn-premium active' : 'btn-outline-secondary'"
                th:text="${cat.name}">
@@ -59,13 +73,13 @@
         <!-- Sub-category Filter (Secondary Tier) -->
         <div th:if="${parentCategory != null && !#lists.isEmpty(parentCategory.subCategories)}" 
              class="d-flex justify-content-center flex-wrap gap-2 mb-5 subcat-filter">
-            <a th:href="@{/menu(catId=${parentCategory.id})}" 
+            <a th:href="@{/menu(catId=${parentCategory.id}, keyword=${keyword})}" 
                class="btn btn-sm px-3 rounded-pill fw-bold"
                th:classappend="${selectedCategory.id == parentCategory.id} ? 'btn-dark text-white' : 'btn-light text-dark'">
                Tất cả [[${parentCategory.name}]]
             </a>
             <a th:each="subCat : ${parentCategory.subCategories}" 
-               th:href="@{/menu(catId=${subCat.id})}" 
+               th:href="@{/menu(catId=${subCat.id}, keyword=${keyword})}" 
                class="btn btn-sm px-3 rounded-pill fw-bold" 
                th:classappend="${selectedCategory.id == subCat.id} ? 'btn-dark text-white' : 'btn-light text-dark'"
                th:text="${subCat.name}">
@@ -74,7 +88,7 @@
 
         <div class="row g-4" id="product-grid">
             <div class="col-12 col-sm-6 col-lg-3 product-item" 
-                 th:each="product : ${products}">
+                 th:each="product : ${productPage.content}">
                 <div class="card h-100 border-0 shadow-lg product-card overflow-hidden" style="border-radius: 20px; transition: 0.3s;">
                     <div class="position-relative">
                         <img th:src="${product.imageUrl ?: 'https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&q=80&w=400&h=300'}" 
@@ -92,23 +106,82 @@
                            th:text="${product.description ?: 'Hương vị đặc trưng chỉ có tại OrderSeat Coffee.'}"></p>
                         
                         <button class="btn btn-premium w-100 rounded-pill btn-add-cart" 
+                                sec:authorize="!hasRole('ADMIN')"
                                 th:data-id="${product.id}" 
                                 th:data-name="${product.name}"
                                 onclick="addToCart(this.getAttribute('data-id'), this.getAttribute('data-name'))">
                             <i class="fa-solid fa-plus me-2"></i>Thêm vào giỏ
                         </button>
+
+                        <button class="btn btn-secondary w-100 rounded-pill disabled" 
+                                sec:authorize="hasRole('ADMIN')">
+                            <i class="fa-solid fa-ban me-2"></i>Admin không thể đặt
+                        </button>
                     </div>
                 </div>
             </div>
             
-            <div th:if="${#lists.isEmpty(products)}" class="col-12 text-center text-muted py-5">
+            <div th:if="${#lists.isEmpty(productPage.content)}" class="col-12 text-center text-muted py-5">
                 <div class="bg-light d-inline-block p-5 rounded-circle mb-4">
                     <i class="fa-solid fa-mug-hot fs-1 text-secondary"></i>
                 </div>
-                <h3>Chưa có sản phẩm nào</h3>
-                <p>Chúng tôi đang cập nhật menu, vui lòng quay lại sau.</p>
+                <h3>Không tìm thấy sản phẩm nào</h3>
+                <p>Thử tìm với từ khóa khác hoặc quay lại danh mục tất cả.</p>
             </div>
         </div>
+
+        <!-- Pagination -->
+        <div class="row mt-5" th:if="${totalPages > 1}">
+            <div class="col-12 d-flex justify-content-center">
+                <nav>
+                    <ul class="pagination pagination-premium">
+                        <!-- Nút Trở về trang trước -->
+                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/menu(page=${currentPage - 1}, catId=${selectedCatId}, keyword=${keyword})}">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        
+                        <!-- Số trang -->
+                        <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}" th:classappend="${currentPage == i} ? 'active'">
+                            <a class="page-link" th:href="@{/menu(page=${i}, catId=${selectedCatId}, keyword=${keyword})}" th:text="${i}">1</a>
+                        </li>
+                        
+                        <!-- Nút Trang tiếp theo -->
+                        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                            <a class="page-link" th:href="@{/menu(page=${currentPage + 1}, catId=${selectedCatId}, keyword=${keyword})}">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        
+        <style>
+            .pagination-premium .page-link {
+                color: #1a120b;
+                border: 1px solid #e8d5b7;
+                margin: 0 4px;
+                border-radius: 50% !important;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                transition: 0.3s;
+            }
+            .pagination-premium .page-item.active .page-link {
+                background-color: #d4a373;
+                border-color: #d4a373;
+                color: white;
+            }
+            .pagination-premium .page-link:hover:not(.disabled) {
+                background-color: #f5ede0;
+                color: #d4a373;
+            }
+        </style>
 
         <!-- Toast Notification cho Add to Cart -->
         <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
@@ -133,8 +206,7 @@
                 fetch('/cart/add', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        [document.querySelector('meta[name="_csrf_header"]').content]: document.querySelector('meta[name="_csrf"]').content
+                        'Content-Type': 'application/x-www-form-urlencoded'
                     },
                     body: formData.toString()
                 })

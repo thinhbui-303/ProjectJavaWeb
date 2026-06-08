@@ -45,4 +45,44 @@ public class UserServiceImpl implements UserService {
         user.setPhone(updatedData.getPhone());
         userRepository.save(user);
     }
+
+    @Override
+    public java.util.List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void updateUserRole(Long userId, String roleName, String currentAdminUsername) {
+        User user = getUserById(userId);
+        
+        if (user.getUsername().equals(currentAdminUsername)) {
+            throw new RuntimeException("Bạn không thể tự thay đổi quyền của chính mình!");
+        }
+
+        Role newRole = roleRepository.findByName(roleName)
+                .orElseThrow(() -> new RuntimeException("Quyền không tồn tại"));
+
+        user.getRoles().clear();
+        user.getRoles().add(newRole);
+        userRepository.save(user);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void deleteUser(Long userId, String currentAdminUsername) {
+        User user = getUserById(userId);
+        
+        if (user.getUsername().equals(currentAdminUsername)) {
+            throw new RuntimeException("Bạn không thể tự xóa tài khoản của chính mình!");
+        }
+        
+        userRepository.deleteById(userId);
+    }
 }

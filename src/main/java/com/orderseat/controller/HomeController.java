@@ -14,15 +14,19 @@ public class HomeController {
 
     @GetMapping("/")
     public String home() {
-        return "redirect:/menu";
+        return "index";
     }
 
     @GetMapping("/admin/dashboard")
-    public String adminDashboard(org.springframework.ui.Model model) {
+    public String adminDashboard(org.springframework.ui.Model model,
+                                 @org.springframework.web.bind.annotation.RequestParam(value = "forbidden", required = false) String forbidden) {
         model.addAttribute("totalReservations", statisticsService.getTotalReservations());
         model.addAttribute("totalRevenue", statisticsService.getTotalRevenue());
         model.addAttribute("totalCustomers", statisticsService.getTotalCustomers());
         model.addAttribute("topProducts", statisticsService.getTopSellingProducts());
+        if (forbidden != null) {
+            model.addAttribute("forbiddenWarning", "Tài khoản Admin không có quyền truy cập trang của khách hàng.");
+        }
         return "admin_dashboard";
     }
 }

@@ -7,6 +7,14 @@
 </head>
 <body>
     <div layout:fragment="content">
+
+        <!-- Thông báo khi Admin cố truy cập trang khách hàng -->
+        <div th:if="${forbiddenWarning}" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+            <strong th:text="${forbiddenWarning}"></strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
             <h1 class="h2">Dashboard Tổng Quan</h1>
         </div>

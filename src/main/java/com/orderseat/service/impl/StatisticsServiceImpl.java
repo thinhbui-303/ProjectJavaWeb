@@ -30,9 +30,8 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Override
     public long getTotalCustomers() {
-        // Giả định đơn giản: lấy tổng user trừ đi admin hoặc đếm user có ROLE_CUSTOMER
-        // Ở đây đếm tổng user cho nhanh, hoặc bạn có thể filter theo role
-        return userRepository.count(); 
+        // Đếm các user có quyền ROLE_CUSTOMER để thống kê số lượng khách hàng chính xác
+        return userRepository.countCustomers(); 
     }
 
     @Override

@@ -42,17 +42,11 @@ public class ReservationServiceImpl implements ReservationService {
             reservation.setReservationTime(LocalDateTime.now().plusHours(2));
         }
 
-        // Kiểm tra xem bàn đã được đặt và xác nhận trong khoảng thời gian +/- 2 tiếng chưa
-        LocalDateTime startTime = reservation.getReservationTime().minusHours(2);
-        LocalDateTime endTime = reservation.getReservationTime().plusHours(2);
-        List<Reservation> conflicts = reservationRepository.findConflictingReservations(
-                reservation.getCoffeeTable().getId(),
-                ReservationStatus.CONFIRMED,
-                startTime,
-                endTime
-        );
-        if (!conflicts.isEmpty()) {
-            throw new RuntimeException("Bàn đã được đặt trong khoảng thời gian này, vui lòng chọn bàn khác hoặc thời gian khác!");
+        // Kiểm tra bàn có đang rảnh không
+        CoffeeTable table = coffeeTableRepository.findById(reservation.getCoffeeTable().getId())
+                .orElseThrow(() -> new RuntimeException("Bàn không tồn tại"));
+        if (table.getStatus() != TableStatus.AVAILABLE) {
+            throw new RuntimeException("Bàn này hiện không trống. Vui lòng chọn bàn khác.");
         }
 
         // Lưu Reservation trước để có ID
@@ -121,6 +115,14 @@ public class ReservationServiceImpl implements ReservationService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn đặt bàn"));
         reservation.setStatus(status);
+        
+        CoffeeTable table = reservation.getCoffeeTable();
+        if (status == ReservationStatus.CONFIRMED) {
+            table.setStatus(TableStatus.OCCUPIED);
+        } else if (status == ReservationStatus.COMPLETED || status == ReservationStatus.CANCELLED) {
+            table.setStatus(TableStatus.AVAILABLE);
+        }
+        
         reservationRepository.save(reservation);
     }
 }

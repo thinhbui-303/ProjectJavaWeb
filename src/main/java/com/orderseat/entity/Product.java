@@ -2,6 +2,8 @@ package com.orderseat.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.Set;
+import java.util.HashSet;
 
 @Entity
 @Table(name = "products")
@@ -30,4 +32,8 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<ReservationDetail> reservationDetails = new HashSet<>();
 }
